@@ -49,16 +49,16 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    Greeting("Android")
+                    RandomText()
                 }
             }
         }
     }
 
     @Composable
-    fun Greeting(name: String) {
-        var inputTextField by remember { mutableStateOf("") }
-        var bodyText by remember { mutableStateOf("") }
+    fun RandomText() {
+        var inputTextField by remember { mutableStateOf("1") }
+        var bodyText by remember { mutableStateOf("(text will be displayed here once fetched)") }
 
         Column(
             verticalArrangement = Arrangement.Top,
@@ -103,7 +103,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun DefaultPreview() {
         TestbedTheme {
-            Greeting("Android")
+            RandomText()
         }
     }
 }
