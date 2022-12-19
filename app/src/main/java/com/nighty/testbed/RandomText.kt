@@ -1,6 +1,5 @@
 package com.nighty.testbed
 
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,7 +11,6 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -42,7 +40,6 @@ fun RandomText(viewModel: MainViewModel = viewModel()) {
                 .padding(16.dp)
                 .fillMaxWidth()
                 .padding(16.dp)
-                .border(1.dp, Color.Red)
         ) {
             Text(text = "Load")
         }

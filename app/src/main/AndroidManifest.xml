@@ -20,7 +20,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Testbed">
         <activity
-            android:name=".MainActivity"
+            android:name="com.nighty.testbed.MainActivity"
             android:exported="true"
             android:theme="@style/Theme.Testbed">
             <intent-filter>
