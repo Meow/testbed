@@ -18,6 +18,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.room.Room
 import com.nighty.testbed.ui.theme.TestbedTheme
+import com.nighty.testbed.viewmodels.MainViewModel
+import com.nighty.testbed.viewmodels.MainViewModelFactory
+import com.nighty.testbed.views.RandomText
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.plugins.contentnegotiation.*

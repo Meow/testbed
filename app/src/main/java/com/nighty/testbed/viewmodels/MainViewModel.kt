@@ -1,7 +1,8 @@
-package com.nighty.testbed
+package com.nighty.testbed.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.nighty.testbed.MainViewState
 import com.nighty.testbed.api.ApplicationApi
 import io.ktor.client.*
 import kotlinx.coroutines.flow.MutableStateFlow

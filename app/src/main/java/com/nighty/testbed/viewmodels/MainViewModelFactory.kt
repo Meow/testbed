@@ -1,4 +1,4 @@
-package com.nighty.testbed
+package com.nighty.testbed.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider

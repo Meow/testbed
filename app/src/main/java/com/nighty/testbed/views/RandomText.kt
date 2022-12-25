@@ -1,4 +1,4 @@
-package com.nighty.testbed
+package com.nighty.testbed.views
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,6 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.nighty.testbed.viewmodels.MainViewModel
+import com.nighty.testbed.MainViewState
 
 @Composable
 fun RandomText(viewModel: MainViewModel = viewModel()) {
