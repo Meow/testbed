@@ -16,6 +16,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.room.Room
 import com.nighty.testbed.ui.theme.TestbedTheme
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
@@ -42,6 +43,10 @@ class MainActivity : ComponentActivity() {
 
     private val mainViewModelFactory = MainViewModelFactory(httpClient)
     private val viewModel: MainViewModel by viewModels(factoryProducer = { mainViewModelFactory })
+    private val db = Room.databaseBuilder(
+        applicationContext,
+        AppDatabase::class.java, "app-database"
+    ).build()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

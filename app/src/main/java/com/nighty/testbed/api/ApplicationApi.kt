@@ -8,4 +8,8 @@ class ApplicationApi(private val client: HttpClient) {
     suspend fun loremIpsum(count: Int): String = client
         .get("https://loripsum.net/api/$count/long/plaintext")
         .body()
+
+    suspend fun randomUser(): String = client
+        .get("https://random-data-api.com/api/v2/users")
+        .body()
 }
