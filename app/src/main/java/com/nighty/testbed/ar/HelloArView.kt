@@ -24,11 +24,12 @@ import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.google.ar.core.Config
+import com.nighty.testbed.MainActivity
 import com.nighty.testbed.common.helpers.SnackbarHelper
 import com.nighty.testbed.common.helpers.TapHelper
 
 /** Contains UI elements for Hello AR. */
-class HelloArView(val activity: HelloArActivity) : DefaultLifecycleObserver {
+class HelloArView(val activity: MainActivity) : DefaultLifecycleObserver {
     val root = View.inflate(activity, R.layout.activity_main, null)
     val surfaceView = root.findViewById<GLSurfaceView>(R.id.surfaceview)
     val settingsButton =

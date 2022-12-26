@@ -90,6 +90,7 @@ public class SpecularCubemapFilter implements Closeable {
     // Using OpenGL directly here since cubemap framebuffers are very involved. Indexed by
     // [mipmapLevel][attachmentChunk].
     private final int[][] framebuffers;
+
     /**
      * Constructs a {@link SpecularCubemapFilter}.
      *

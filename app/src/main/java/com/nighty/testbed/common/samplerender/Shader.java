@@ -47,6 +47,7 @@ public class Shader implements Closeable {
     private BlendFactor destRgbBlend = BlendFactor.ZERO;
     private BlendFactor sourceAlphaBlend = BlendFactor.ONE;
     private BlendFactor destAlphaBlend = BlendFactor.ZERO;
+
     /**
      * Constructs a {@link Shader} given the shader code.
      *

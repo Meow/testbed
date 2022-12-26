@@ -1,10 +1,13 @@
 package com.nighty.testbed.views
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Button
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.nighty.testbed.MainViewState
 import com.nighty.testbed.models.User
@@ -21,41 +24,46 @@ fun UserList(viewModel: MainViewModel = viewModel()) {
 
     // todo: pagination
 
-    Button(onClick = {
-        viewModel.createRandomUser(onFinish = { usr ->
-            usr?.let { users.add(it) }
-        })
-    }) {
-        Text(text = "Generate Random")
-    }
-
-    val state = viewModel.stateFlow.collectAsState().value
-
-    when (val s = state) {
-        MainViewState.Loading -> {
-            CircularProgressIndicator()
+    Column(
+        verticalArrangement = Arrangement.Top,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Button(onClick = {
+            viewModel.createRandomUser(onFinish = { usr ->
+                usr?.let { users.add(it) }
+            })
+        }) {
+            Text(text = "Generate Random Person")
         }
-        is MainViewState.UserCreated -> {
-            if (s.usr != null) {
-                Text(text = "Successfully added a random user.")
 
-                users.add(s.usr)
-            } else {
-                Text(text = "Failed to create a random user!")
+        val state = viewModel.stateFlow.collectAsState().value
+
+        when (val s = state) {
+            MainViewState.Loading -> {
+                CircularProgressIndicator()
             }
-        }
-        is MainViewState.UsersLoaded -> {
-            users.clear()
-            users.addAll(s.users)
+            is MainViewState.UserCreated -> {
+                if (s.usr != null) {
+                    Text(text = "Successfully added a random user.")
 
-            LazyColumn {
-                items(users.count()) { index ->
-                    UserListItem(users[index])
+                    users.add(s.usr)
+                } else {
+                    Text(text = "Failed to create a random user!")
                 }
             }
-        }
-        else -> {
-            Text(text = "Something went wrong!")
+            is MainViewState.UsersLoaded -> {
+                users.clear()
+                users.addAll(s.users)
+
+                LazyColumn {
+                    items(users.count()) { index ->
+                        UserListItem(users[index])
+                    }
+                }
+            }
+            else -> {
+                Text(text = "Something went wrong!")
+            }
         }
     }
 }

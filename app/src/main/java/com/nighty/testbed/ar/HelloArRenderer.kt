@@ -23,6 +23,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.google.ar.core.*
 import com.google.ar.core.exceptions.CameraNotAvailableException
 import com.google.ar.core.exceptions.NotYetAvailableException
+import com.nighty.testbed.MainActivity
 import com.nighty.testbed.common.helpers.DisplayRotationHelper
 import com.nighty.testbed.common.helpers.TrackingStateHelper
 import com.nighty.testbed.common.samplerender.*
@@ -33,7 +34,7 @@ import java.io.IOException
 import java.nio.ByteBuffer
 
 /** Renders the HelloAR application using our example Renderer. */
-class HelloArRenderer(val activity: HelloArActivity) :
+class HelloArRenderer(val activity: MainActivity) :
     SampleRender.Renderer, DefaultLifecycleObserver {
     companion object {
         val TAG = "HelloArRenderer"

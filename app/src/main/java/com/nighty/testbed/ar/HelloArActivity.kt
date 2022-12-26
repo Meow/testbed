@@ -27,7 +27,6 @@ import com.nighty.testbed.common.helpers.CameraPermissionHelper
 import com.nighty.testbed.common.helpers.DepthSettings
 import com.nighty.testbed.common.helpers.FullScreenHelper
 import com.nighty.testbed.common.helpers.InstantPlacementSettings
-import com.nighty.testbed.common.samplerender.SampleRender
 import com.nighty.testbed.helpers.ARCoreSessionLifecycleHelper
 
 /**
@@ -75,19 +74,19 @@ class HelloArActivity : AppCompatActivity() {
         lifecycle.addObserver(arCoreSessionHelper)
 
         // Set up the Hello AR renderer.
-        renderer = HelloArRenderer(this)
-        lifecycle.addObserver(renderer)
+//        renderer = HelloArRenderer(this)
+//        lifecycle.addObserver(renderer)
 
-        // Set up Hello AR UI.
-        view = HelloArView(this)
-        lifecycle.addObserver(view)
-        setContentView(view.root)
-
-        // Sets up an example renderer using our HelloARRenderer.
-        SampleRender(view.surfaceView, renderer, assets)
-
-        depthSettings.onCreate(this)
-        instantPlacementSettings.onCreate(this)
+//        // Set up Hello AR UI.
+//        view = HelloArView(this)
+//        lifecycle.addObserver(view)
+//        setContentView(view.root)
+//
+//        // Sets up an example renderer using our HelloARRenderer.
+//        SampleRender(view.surfaceView, renderer, assets)
+//
+//        depthSettings.onCreate(this)
+//        instantPlacementSettings.onCreate(this)
     }
 
     // Configure the session, using Lighting Estimation, and Depth mode.

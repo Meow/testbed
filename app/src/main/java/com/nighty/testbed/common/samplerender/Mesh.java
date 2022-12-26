@@ -40,6 +40,7 @@ public class Mesh implements Closeable {
     private final PrimitiveMode primitiveMode;
     private final IndexBuffer indexBuffer;
     private final VertexBuffer[] vertexBuffers;
+
     /**
      * Construct a {@link Mesh}.
      *
