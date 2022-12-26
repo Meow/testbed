@@ -25,7 +25,6 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.google.ar.core.Config
 import com.nighty.testbed.MainActivity
-import com.nighty.testbed.common.helpers.SnackbarHelper
 import com.nighty.testbed.common.helpers.TapHelper
 
 /** Contains UI elements for Hello AR. */
@@ -52,7 +51,7 @@ class HelloArView(val activity: MainActivity) : DefaultLifecycleObserver {
     val session
         get() = activity.arCoreSessionHelper.session
 
-    val snackbarHelper = SnackbarHelper()
+    //val snackbarHelper = SnackbarHelper()
     val tapHelper = TapHelper(activity).also { surfaceView.setOnTouchListener(it) }
 
     override fun onResume(owner: LifecycleOwner) {

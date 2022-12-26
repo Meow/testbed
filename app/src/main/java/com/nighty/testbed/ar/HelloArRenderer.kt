@@ -335,9 +335,9 @@ class HelloArRenderer(val activity: MainActivity) :
                 else -> activity.getString(R.string.searching_planes)
             }
         if (message == null) {
-            activity.view.snackbarHelper.hide(activity)
+            // activity.view.snackbarHelper.hide(activity)
         } else {
-            activity.view.snackbarHelper.showMessage(activity, message)
+            // activity.view.snackbarHelper.showMessage(activity, message)
         }
 
         // -- Draw background
@@ -529,8 +529,9 @@ class HelloArRenderer(val activity: MainActivity) :
         }
     }
 
-    private fun showError(errorMessage: String) =
-        activity.view.snackbarHelper.showError(activity, errorMessage)
+    private fun showError(errorMessage: String) {
+        // activity.view.snackbarHelper.showError(activity, errorMessage)
+    }
 }
 
 /**

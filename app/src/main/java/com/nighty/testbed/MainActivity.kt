@@ -90,7 +90,7 @@ class MainActivity : ComponentActivity() {
                         else -> "Failed to create AR session: $exception"
                     }
                 Log.e(TAG, "ARCore threw an exception", exception)
-                view.snackbarHelper.showError(this, message)
+                // view.snackbarHelper.showError(this, message)
             }
 
         // Configure session features, including: Lighting Estimation, Depth mode, Instant Placement.

@@ -2,7 +2,10 @@ package com.nighty.testbed.views
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -15,10 +18,20 @@ fun MainView(viewModel: MainViewModel, arView: HelloArView) {
 
     Column(verticalArrangement = Arrangement.SpaceBetween) {
         NavButtons(navController)
-        NavHost(navController = navController, startDestination = "random-text") {
+        NavHost(navController = navController, startDestination = "ar-view") {
             composable("random-text") { RandomText(viewModel) }
             composable("user-list") { UserList(viewModel) }
-            composable("ar-view") { arView.root }
+            composable("ar-view") {
+                AndroidView(
+                    modifier = Modifier.fillMaxSize(),
+                    factory = { context ->
+                        arView.root
+                    },
+                    update = { view ->
+
+                    }
+                )
+            }
         }
     }
 }
