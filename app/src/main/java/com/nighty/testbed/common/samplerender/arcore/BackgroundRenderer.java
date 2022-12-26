@@ -66,10 +66,10 @@ public class BackgroundRenderer {
 
     private final Mesh mesh;
     private final VertexBuffer cameraTexCoordsVertexBuffer;
-    private Shader backgroundShader;
-    private Shader occlusionShader;
     private final Texture cameraDepthTexture;
     private final Texture cameraColorTexture;
+    private Shader backgroundShader;
+    private Shader occlusionShader;
     private Texture depthColorPaletteTexture;
 
     private boolean useDepthVisualization;

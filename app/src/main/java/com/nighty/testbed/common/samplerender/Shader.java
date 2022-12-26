@@ -36,51 +36,17 @@ import java.util.regex.Matcher;
  */
 public class Shader implements Closeable {
     private static final String TAG = Shader.class.getSimpleName();
-
-    /**
-     * A factor to be used in a blend function.
-     *
-     * @see <a
-     * href="https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glBlendFunc.xhtml">glBlendFunc</a>
-     */
-    public enum BlendFactor {
-        ZERO(GLES30.GL_ZERO),
-        ONE(GLES30.GL_ONE),
-        SRC_COLOR(GLES30.GL_SRC_COLOR),
-        ONE_MINUS_SRC_COLOR(GLES30.GL_ONE_MINUS_SRC_COLOR),
-        DST_COLOR(GLES30.GL_DST_COLOR),
-        ONE_MINUS_DST_COLOR(GLES30.GL_ONE_MINUS_DST_COLOR),
-        SRC_ALPHA(GLES30.GL_SRC_ALPHA),
-        ONE_MINUS_SRC_ALPHA(GLES30.GL_ONE_MINUS_SRC_ALPHA),
-        DST_ALPHA(GLES30.GL_DST_ALPHA),
-        ONE_MINUS_DST_ALPHA(GLES30.GL_ONE_MINUS_DST_ALPHA),
-        CONSTANT_COLOR(GLES30.GL_CONSTANT_COLOR),
-        ONE_MINUS_CONSTANT_COLOR(GLES30.GL_ONE_MINUS_CONSTANT_COLOR),
-        CONSTANT_ALPHA(GLES30.GL_CONSTANT_ALPHA),
-        ONE_MINUS_CONSTANT_ALPHA(GLES30.GL_ONE_MINUS_CONSTANT_ALPHA);
-
-        /* package-private */
-        final int glesEnum;
-
-        BlendFactor(int glesEnum) {
-            this.glesEnum = glesEnum;
-        }
-    }
-
-    private int programId = 0;
     private final Map<Integer, Uniform> uniforms = new HashMap<>();
-    private int maxTextureUnit = 0;
-
     private final Map<String, Integer> uniformLocations = new HashMap<>();
     private final Map<Integer, String> uniformNames = new HashMap<>();
-
+    private int programId = 0;
+    private int maxTextureUnit = 0;
     private boolean depthTest = true;
     private boolean depthWrite = true;
     private BlendFactor sourceRgbBlend = BlendFactor.ONE;
     private BlendFactor destRgbBlend = BlendFactor.ZERO;
     private BlendFactor sourceAlphaBlend = BlendFactor.ONE;
     private BlendFactor destAlphaBlend = BlendFactor.ZERO;
-
     /**
      * Constructs a {@link Shader} given the shader code.
      *
@@ -156,6 +122,62 @@ public class Shader implements Closeable {
                 inputStreamToString(assets.open(vertexShaderFileName)),
                 inputStreamToString(assets.open(fragmentShaderFileName)),
                 defines);
+    }
+
+    private static int createShader(int type, String code) {
+        int shaderId = GLES30.glCreateShader(type);
+        GLError.maybeThrowGLException("Shader creation failed", "glCreateShader");
+        GLES30.glShaderSource(shaderId, code);
+        GLError.maybeThrowGLException("Shader source failed", "glShaderSource");
+        GLES30.glCompileShader(shaderId);
+        GLError.maybeThrowGLException("Shader compilation failed", "glCompileShader");
+
+        final int[] compileStatus = new int[1];
+        GLES30.glGetShaderiv(shaderId, GLES30.GL_COMPILE_STATUS, compileStatus, 0);
+        if (compileStatus[0] == GLES30.GL_FALSE) {
+            String infoLog = GLES30.glGetShaderInfoLog(shaderId);
+            GLError.maybeLogGLError(
+                    Log.WARN, TAG, "Failed to retrieve shader info log", "glGetShaderInfoLog");
+            GLES30.glDeleteShader(shaderId);
+            GLError.maybeLogGLError(Log.WARN, TAG, "Failed to free shader", "glDeleteShader");
+            throw new GLException(0, "Shader compilation failed: " + infoLog);
+        }
+
+        return shaderId;
+    }
+
+    private static String createShaderDefinesCode(Map<String, String> defines) {
+        if (defines == null) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (Map.Entry<String, String> entry : defines.entrySet()) {
+            builder.append("#define " + entry.getKey() + " " + entry.getValue() + "\n");
+        }
+        return builder.toString();
+    }
+
+    private static String insertShaderDefinesCode(String sourceCode, String definesCode) {
+        String result =
+                sourceCode.replaceAll(
+                        "(?m)^(\\s*#\\s*version\\s+.*)$", "$1\n" + Matcher.quoteReplacement(definesCode));
+        if (result.equals(sourceCode)) {
+            // No #version specified, so just prepend source
+            return definesCode + sourceCode;
+        }
+        return result;
+    }
+
+    private static String inputStreamToString(InputStream stream) throws IOException {
+        InputStreamReader reader = new InputStreamReader(stream, UTF_8.name());
+        char[] buffer = new char[1024 * 4];
+        StringBuilder builder = new StringBuilder();
+        int amount = 0;
+        while ((amount = reader.read(buffer)) != -1) {
+            builder.append(buffer, 0, amount);
+        }
+        reader.close();
+        return builder.toString();
     }
 
     @Override
@@ -474,6 +496,51 @@ public class Shader implements Closeable {
         }
     }
 
+    private int getUniformLocation(String name) {
+        Integer locationObject = uniformLocations.get(name);
+        if (locationObject != null) {
+            return locationObject;
+        }
+        int location = GLES30.glGetUniformLocation(programId, name);
+        GLError.maybeThrowGLException("Failed to find uniform", "glGetUniformLocation");
+        if (location == -1) {
+            throw new IllegalArgumentException("Shader uniform does not exist: " + name);
+        }
+        uniformLocations.put(name, Integer.valueOf(location));
+        uniformNames.put(Integer.valueOf(location), name);
+        return location;
+    }
+
+    /**
+     * A factor to be used in a blend function.
+     *
+     * @see <a
+     * href="https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glBlendFunc.xhtml">glBlendFunc</a>
+     */
+    public enum BlendFactor {
+        ZERO(GLES30.GL_ZERO),
+        ONE(GLES30.GL_ONE),
+        SRC_COLOR(GLES30.GL_SRC_COLOR),
+        ONE_MINUS_SRC_COLOR(GLES30.GL_ONE_MINUS_SRC_COLOR),
+        DST_COLOR(GLES30.GL_DST_COLOR),
+        ONE_MINUS_DST_COLOR(GLES30.GL_ONE_MINUS_DST_COLOR),
+        SRC_ALPHA(GLES30.GL_SRC_ALPHA),
+        ONE_MINUS_SRC_ALPHA(GLES30.GL_ONE_MINUS_SRC_ALPHA),
+        DST_ALPHA(GLES30.GL_DST_ALPHA),
+        ONE_MINUS_DST_ALPHA(GLES30.GL_ONE_MINUS_DST_ALPHA),
+        CONSTANT_COLOR(GLES30.GL_CONSTANT_COLOR),
+        ONE_MINUS_CONSTANT_COLOR(GLES30.GL_ONE_MINUS_CONSTANT_COLOR),
+        CONSTANT_ALPHA(GLES30.GL_CONSTANT_ALPHA),
+        ONE_MINUS_CONSTANT_ALPHA(GLES30.GL_ONE_MINUS_CONSTANT_ALPHA);
+
+        /* package-private */
+        final int glesEnum;
+
+        BlendFactor(int glesEnum) {
+            this.glesEnum = glesEnum;
+        }
+    }
+
     private interface Uniform {
         void use(int location);
     }
@@ -615,76 +682,5 @@ public class Shader implements Closeable {
             GLES30.glUniformMatrix4fv(location, values.length / 16, /*transpose=*/ false, values, 0);
             GLError.maybeThrowGLException("Failed to set shader uniform matrix 4f", "glUniformMatrix4fv");
         }
-    }
-
-    private int getUniformLocation(String name) {
-        Integer locationObject = uniformLocations.get(name);
-        if (locationObject != null) {
-            return locationObject;
-        }
-        int location = GLES30.glGetUniformLocation(programId, name);
-        GLError.maybeThrowGLException("Failed to find uniform", "glGetUniformLocation");
-        if (location == -1) {
-            throw new IllegalArgumentException("Shader uniform does not exist: " + name);
-        }
-        uniformLocations.put(name, Integer.valueOf(location));
-        uniformNames.put(Integer.valueOf(location), name);
-        return location;
-    }
-
-    private static int createShader(int type, String code) {
-        int shaderId = GLES30.glCreateShader(type);
-        GLError.maybeThrowGLException("Shader creation failed", "glCreateShader");
-        GLES30.glShaderSource(shaderId, code);
-        GLError.maybeThrowGLException("Shader source failed", "glShaderSource");
-        GLES30.glCompileShader(shaderId);
-        GLError.maybeThrowGLException("Shader compilation failed", "glCompileShader");
-
-        final int[] compileStatus = new int[1];
-        GLES30.glGetShaderiv(shaderId, GLES30.GL_COMPILE_STATUS, compileStatus, 0);
-        if (compileStatus[0] == GLES30.GL_FALSE) {
-            String infoLog = GLES30.glGetShaderInfoLog(shaderId);
-            GLError.maybeLogGLError(
-                    Log.WARN, TAG, "Failed to retrieve shader info log", "glGetShaderInfoLog");
-            GLES30.glDeleteShader(shaderId);
-            GLError.maybeLogGLError(Log.WARN, TAG, "Failed to free shader", "glDeleteShader");
-            throw new GLException(0, "Shader compilation failed: " + infoLog);
-        }
-
-        return shaderId;
-    }
-
-    private static String createShaderDefinesCode(Map<String, String> defines) {
-        if (defines == null) {
-            return "";
-        }
-        StringBuilder builder = new StringBuilder();
-        for (Map.Entry<String, String> entry : defines.entrySet()) {
-            builder.append("#define " + entry.getKey() + " " + entry.getValue() + "\n");
-        }
-        return builder.toString();
-    }
-
-    private static String insertShaderDefinesCode(String sourceCode, String definesCode) {
-        String result =
-                sourceCode.replaceAll(
-                        "(?m)^(\\s*#\\s*version\\s+.*)$", "$1\n" + Matcher.quoteReplacement(definesCode));
-        if (result.equals(sourceCode)) {
-            // No #version specified, so just prepend source
-            return definesCode + sourceCode;
-        }
-        return result;
-    }
-
-    private static String inputStreamToString(InputStream stream) throws IOException {
-        InputStreamReader reader = new InputStreamReader(stream, UTF_8.name());
-        char[] buffer = new char[1024 * 4];
-        StringBuilder builder = new StringBuilder();
-        int amount = 0;
-        while ((amount = reader.read(buffer)) != -1) {
-            builder.append(buffer, 0, amount);
-        }
-        reader.close();
-        return builder.toString();
     }
 }

@@ -48,28 +48,6 @@ public final class TrackingStateHelper {
         this.activity = activity;
     }
 
-    /**
-     * Keep the screen unlocked while tracking, but allow it to lock when tracking stops.
-     */
-    public void updateKeepScreenOnFlag(TrackingState trackingState) {
-        if (trackingState == previousTrackingState) {
-            return;
-        }
-
-        previousTrackingState = trackingState;
-        switch (trackingState) {
-            case PAUSED:
-            case STOPPED:
-                activity.runOnUiThread(
-                        () -> activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON));
-                break;
-            case TRACKING:
-                activity.runOnUiThread(
-                        () -> activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON));
-                break;
-        }
-    }
-
     public static String getTrackingFailureReasonString(Camera camera) {
         TrackingFailureReason reason = camera.getTrackingFailureReason();
         switch (reason) {
@@ -91,5 +69,27 @@ public final class TrackingStateHelper {
                 return CAMERA_UNAVAILABLE_MESSAGE;
         }
         return "Unknown tracking failure reason: " + reason;
+    }
+
+    /**
+     * Keep the screen unlocked while tracking, but allow it to lock when tracking stops.
+     */
+    public void updateKeepScreenOnFlag(TrackingState trackingState) {
+        if (trackingState == previousTrackingState) {
+            return;
+        }
+
+        previousTrackingState = trackingState;
+        switch (trackingState) {
+            case PAUSED:
+            case STOPPED:
+                activity.runOnUiThread(
+                        () -> activity.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON));
+                break;
+            case TRACKING:
+                activity.runOnUiThread(
+                        () -> activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON));
+                break;
+        }
     }
 }

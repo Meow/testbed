@@ -28,6 +28,9 @@ import java.util.List;
  * Module for handling OpenGL errors.
  */
 public class GLError {
+    private GLError() {
+    }
+
     /**
      * Throws a {@link GLException} if a GL error occurred.
      */
@@ -77,8 +80,5 @@ public class GLError {
             errorCodes.add(errorCode);
         }
         return errorCodes;
-    }
-
-    private GLError() {
     }
 }

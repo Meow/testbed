@@ -22,12 +22,10 @@ import java.nio.Buffer;
 
 /* package-private */
 class GpuBuffer {
-    private static final String TAG = GpuBuffer.class.getSimpleName();
-
     // These values refer to the byte count of the corresponding Java datatypes.
     public static final int INT_SIZE = 4;
     public static final int FLOAT_SIZE = 4;
-
+    private static final String TAG = GpuBuffer.class.getSimpleName();
     private final int target;
     private final int numberOfBytesPerEntry;
     private final int[] bufferId = {0};

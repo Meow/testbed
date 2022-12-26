@@ -21,6 +21,7 @@ import com.nighty.testbed.ui.theme.TestbedTheme
 import com.nighty.testbed.viewmodels.MainViewModel
 import com.nighty.testbed.viewmodels.MainViewModelFactory
 import com.nighty.testbed.views.RandomText
+import com.nighty.testbed.views.UserList
 import io.ktor.client.*
 import io.ktor.client.engine.android.*
 import io.ktor.client.plugins.contentnegotiation.*
@@ -44,14 +45,16 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private val mainViewModelFactory = MainViewModelFactory(httpClient)
-    private val viewModel: MainViewModel by viewModels(factoryProducer = { mainViewModelFactory })
-    private val db = Room.databaseBuilder(
-        applicationContext,
-        AppDatabase::class.java, "app-database"
-    ).build()
-
     override fun onCreate(savedInstanceState: Bundle?) {
+        val db: AppDatabase = Room.databaseBuilder(
+            applicationContext,
+            AppDatabase::class.java,
+            "app.db"
+        ).allowMainThreadQueries().build()
+
+        val mainViewModelFactory = MainViewModelFactory(httpClient, db)
+        val viewModel: MainViewModel by viewModels(factoryProducer = { mainViewModelFactory })
+
         super.onCreate(savedInstanceState)
         setContent {
             TestbedTheme {
@@ -60,21 +63,22 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background
                 ) {
-                    MainView()
+                    MainView(viewModel)
                 }
             }
         }
     }
 
     @Composable
-    fun MainView() {
+    fun MainView(viewModel: MainViewModel) {
         val navController = rememberNavController()
 
         Column(verticalArrangement = Arrangement.SpaceBetween) {
+            NavButtons(navController)
             NavHost(navController = navController, startDestination = "random-text") {
                 composable("random-text") { RandomText(viewModel) }
+                composable("user-list") { UserList(viewModel) }
             }
-            NavButtons(navController)
         }
     }
 
@@ -91,7 +95,7 @@ class MainActivity : ComponentActivity() {
             }
 
             Button(onClick = {
-                navController.navigate("random-text")
+                navController.navigate("user-list")
             }) {
                 Text(text = "Profiles")
             }
@@ -108,7 +112,7 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun DefaultPreview() {
         TestbedTheme {
-            RandomText(viewModel)
+            Text("Preview text")
         }
     }
 }

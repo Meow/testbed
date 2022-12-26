@@ -85,16 +85,6 @@ public class PlaneRenderer {
     private final IndexBuffer indexBufferObject;
     private final VertexBuffer vertexBufferObject;
     private final Shader shader;
-
-    private FloatBuffer vertexBuffer =
-            ByteBuffer.allocateDirect(INITIAL_VERTEX_BUFFER_SIZE_BYTES)
-                    .order(ByteOrder.nativeOrder())
-                    .asFloatBuffer();
-    private IntBuffer indexBuffer =
-            ByteBuffer.allocateDirect(INITIAL_INDEX_BUFFER_SIZE_BYTES)
-                    .order(ByteOrder.nativeOrder())
-                    .asIntBuffer();
-
     // Temporary lists/matrices allocated here to reduce number of allocations for each frame.
     private final float[] viewMatrix = new float[16];
     private final float[] modelMatrix = new float[16];
@@ -103,8 +93,15 @@ public class PlaneRenderer {
     private final float[] planeAngleUvMatrix =
             new float[4]; // 2x2 rotation matrix applied to uv coords.
     private final float[] normalVector = new float[3];
-
     private final Map<Plane, Integer> planeIndexMap = new HashMap<>();
+    private FloatBuffer vertexBuffer =
+            ByteBuffer.allocateDirect(INITIAL_VERTEX_BUFFER_SIZE_BYTES)
+                    .order(ByteOrder.nativeOrder())
+                    .asFloatBuffer();
+    private IntBuffer indexBuffer =
+            ByteBuffer.allocateDirect(INITIAL_INDEX_BUFFER_SIZE_BYTES)
+                    .order(ByteOrder.nativeOrder())
+                    .asIntBuffer();
 
     /**
      * Allocates and initializes OpenGL resources needed by the plane renderer. Must be called during
@@ -130,6 +127,21 @@ public class PlaneRenderer {
         vertexBufferObject = new VertexBuffer(render, COORDS_PER_VERTEX, /*entries=*/ null);
         VertexBuffer[] vertexBuffers = {vertexBufferObject};
         mesh = new Mesh(render, Mesh.PrimitiveMode.TRIANGLE_STRIP, indexBufferObject, vertexBuffers);
+    }
+
+    // Calculate the normal distance to plane from cameraPose, the given planePose should have y axis
+    // parallel to plane's normal, for example plane's center pose or hit test pose.
+    public static float calculateDistanceToPlane(Pose planePose, Pose cameraPose) {
+        float[] normal = new float[3];
+        float cameraX = cameraPose.tx();
+        float cameraY = cameraPose.ty();
+        float cameraZ = cameraPose.tz();
+        // Get transformed Y axis of plane's coordinate system.
+        planePose.getTransformedAxis(1, 1.0f, normal, 0);
+        // Compute dot product of plane's normal with vector from camera to plane center.
+        return (cameraX - planePose.tx()) * normal[0]
+                + (cameraY - planePose.ty()) * normal[1]
+                + (cameraZ - planePose.tz()) * normal[2];
     }
 
     /**
@@ -311,20 +323,5 @@ public class PlaneRenderer {
             this.distance = distance;
             this.plane = plane;
         }
-    }
-
-    // Calculate the normal distance to plane from cameraPose, the given planePose should have y axis
-    // parallel to plane's normal, for example plane's center pose or hit test pose.
-    public static float calculateDistanceToPlane(Pose planePose, Pose cameraPose) {
-        float[] normal = new float[3];
-        float cameraX = cameraPose.tx();
-        float cameraY = cameraPose.ty();
-        float cameraZ = cameraPose.tz();
-        // Get transformed Y axis of plane's coordinate system.
-        planePose.getTransformedAxis(1, 1.0f, normal, 0);
-        // Compute dot product of plane's normal with vector from camera to plane center.
-        return (cameraX - planePose.tx()) * normal[0]
-                + (cameraY - planePose.ty()) * normal[1]
-                + (cameraZ - planePose.tz()) * normal[2];
     }
 }

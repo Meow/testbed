@@ -55,23 +55,12 @@ public class SpecularCubemapFilter implements Closeable {
     private static final int FLOAT_SIZE = 4;
     private static final int COORDS_BUFFER_SIZE =
             COMPONENTS_PER_VERTEX * NUMBER_OF_VERTICES * FLOAT_SIZE;
-
-    private static final int NUMBER_OF_CUBE_FACES = 6;
-
     private static final FloatBuffer COORDS_BUFFER =
             ByteBuffer.allocateDirect(COORDS_BUFFER_SIZE).order(ByteOrder.nativeOrder()).asFloatBuffer();
-
-    static {
-        COORDS_BUFFER.put(
-                new float[]{
-                        /*0:*/ -1f, -1f, /*1:*/ +1f, -1f, /*2:*/ -1f, +1f, /*3:*/ +1f, +1f,
-                });
-    }
-
+    private static final int NUMBER_OF_CUBE_FACES = 6;
     private static final String[] ATTACHMENT_LOCATION_DEFINES = {
             "PX_LOCATION", "NX_LOCATION", "PY_LOCATION", "NY_LOCATION", "PZ_LOCATION", "NZ_LOCATION",
     };
-
     private static final int[] ATTACHMENT_ENUMS = {
             GLES30.GL_COLOR_ATTACHMENT0,
             GLES30.GL_COLOR_ATTACHMENT1,
@@ -80,87 +69,27 @@ public class SpecularCubemapFilter implements Closeable {
             GLES30.GL_COLOR_ATTACHMENT4,
             GLES30.GL_COLOR_ATTACHMENT5,
     };
+    // Math!
+    private static final float PI_F = (float) Math.PI;
 
-    // We need to create enough shaders and framebuffers to encompass every face of the cubemap. Each
-    // color attachment is used by the framebuffer to render to a different face of the cubemap, so we
-    // use "chunks" which define as many color attachments as possible for each face. For example, if
-    // we have a maximum of 3 color attachments, we must create two shaders with the following color
-    // attachments:
-    //
-    // layout(location = 0) out vec4 o_FragColorPX;
-    // layout(location = 1) out vec4 o_FragColorNX;
-    // layout(location = 2) out vec4 o_FragColorPY;
-    //
-    // and
-    //
-    // layout(location = 0) out vec4 o_FragColorNY;
-    // layout(location = 1) out vec4 o_FragColorPZ;
-    // layout(location = 2) out vec4 o_FragColorNZ;
-    private static class Chunk {
-        public final int chunkIndex;
-        public final int chunkSize;
-        public final int firstFaceIndex;
-
-        public Chunk(int chunkIndex, int maxChunkSize) {
-            this.chunkIndex = chunkIndex;
-            this.firstFaceIndex = chunkIndex * maxChunkSize;
-            this.chunkSize = min(maxChunkSize, NUMBER_OF_CUBE_FACES - this.firstFaceIndex);
-        }
-    }
-
-    private static class ChunkIterable implements Iterable<Chunk> {
-        public final int maxChunkSize;
-        public final int numberOfChunks;
-
-        public ChunkIterable(int maxNumberOfColorAttachments) {
-            this.maxChunkSize = min(maxNumberOfColorAttachments, NUMBER_OF_CUBE_FACES);
-            int numberOfChunks = NUMBER_OF_CUBE_FACES / this.maxChunkSize;
-            if (NUMBER_OF_CUBE_FACES % this.maxChunkSize != 0) {
-                numberOfChunks++;
-            }
-            this.numberOfChunks = numberOfChunks;
-        }
-
-        @Override
-        public Iterator<Chunk> iterator() {
-            return new Iterator<Chunk>() {
-                private Chunk chunk = new Chunk(/*chunkIndex=*/ 0, maxChunkSize);
-
-                @Override
-                public boolean hasNext() {
-                    return chunk.chunkIndex < numberOfChunks;
-                }
-
-                @Override
-                public Chunk next() {
-                    Chunk result = this.chunk;
-                    this.chunk = new Chunk(result.chunkIndex + 1, maxChunkSize);
-                    return result;
-                }
-            };
-        }
-    }
-
-    private static class ImportanceSampleCacheEntry {
-        public float[] direction;
-        public float contribution;
-        public float level;
+    static {
+        COORDS_BUFFER.put(
+                new float[]{
+                        /*0:*/ -1f, -1f, /*1:*/ +1f, -1f, /*2:*/ -1f, +1f, /*3:*/ +1f, +1f,
+                });
     }
 
     private final int resolution;
     private final int numberOfImportanceSamples;
     private final int numberOfMipmapLevels;
-
     private final Texture radianceCubemap;
     private final Texture ldCubemap;
     // Indexed by attachment chunk.
     private final Shader[] shaders;
     private final Mesh mesh;
-
     // Using OpenGL directly here since cubemap framebuffers are very involved. Indexed by
     // [mipmapLevel][attachmentChunk].
     private final int[][] framebuffers;
-
     /**
      * Constructs a {@link SpecularCubemapFilter}.
      *
@@ -202,6 +131,69 @@ public class SpecularCubemapFilter implements Closeable {
             close();
             throw t;
         }
+    }
+
+    private static int getMaxColorAttachments() {
+        int[] result = new int[1];
+        GLES30.glGetIntegerv(GLES30.GL_MAX_COLOR_ATTACHMENTS, result, 0);
+        GLError.maybeThrowGLException("Failed to get max color attachments", "glGetIntegerv");
+        return result[0];
+    }
+
+    private static int log2(int value) {
+        if (value <= 0) {
+            throw new IllegalArgumentException("value must be positive");
+        }
+        value >>= 1;
+        int result = 0;
+        while (value != 0) {
+            ++result;
+            value >>= 1;
+        }
+        return result;
+    }
+
+    private static float log4(float value) {
+        return (float) (Math.log((double) value) / Math.log(4.0));
+    }
+
+    private static float sqrt(float value) {
+        return (float) Math.sqrt((double) value);
+    }
+
+    private static float sin(float value) {
+        return (float) Math.sin((double) value);
+    }
+
+    private static float cos(float value) {
+        return (float) Math.cos((double) value);
+    }
+
+    private static float[] hammersley(int i, float iN) {
+        float tof = 0.5f / 0x80000000L;
+        long bits = i;
+        bits = (bits << 16) | (bits >>> 16);
+        bits = ((bits & 0x55555555L) << 1) | ((bits & 0xAAAAAAAAL) >>> 1);
+        bits = ((bits & 0x33333333L) << 2) | ((bits & 0xCCCCCCCCL) >>> 2);
+        bits = ((bits & 0x0F0F0F0FL) << 4) | ((bits & 0xF0F0F0F0L) >>> 4);
+        bits = ((bits & 0x00FF00FFL) << 8) | ((bits & 0xFF00FF00L) >>> 8);
+        return new float[]{i * iN, bits * tof};
+    }
+
+    private static float[] hemisphereImportanceSampleDggx(float[] u, float a) {
+        // GGX - Trowbridge-Reitz importance sampling
+        float phi = 2.0f * PI_F * u[0];
+        // NOTE: (aa-1) == (a-1)(a+1) produces better fp accuracy
+        float cosTheta2 = (1f - u[1]) / (1f + (a + 1f) * ((a - 1f) * u[1]));
+        float cosTheta = sqrt(cosTheta2);
+        float sinTheta = sqrt(1f - cosTheta2);
+        return new float[]{sinTheta * cos(phi), sinTheta * sin(phi), cosTheta};
+    }
+
+    private static float distributionGgx(float noh, float a) {
+        // NOTE: (aa-1) == (a-1)(a+1) produces better fp accuracy
+        float f = (a - 1f) * ((a + 1f) * (noh * noh)) + 1f;
+        return (a * a) / (PI_F * f * f);
     }
 
     @Override
@@ -461,69 +453,69 @@ public class SpecularCubemapFilter implements Closeable {
         return result;
     }
 
-    private static int getMaxColorAttachments() {
-        int[] result = new int[1];
-        GLES30.glGetIntegerv(GLES30.GL_MAX_COLOR_ATTACHMENTS, result, 0);
-        GLError.maybeThrowGLException("Failed to get max color attachments", "glGetIntegerv");
-        return result[0];
-    }
+    // We need to create enough shaders and framebuffers to encompass every face of the cubemap. Each
+    // color attachment is used by the framebuffer to render to a different face of the cubemap, so we
+    // use "chunks" which define as many color attachments as possible for each face. For example, if
+    // we have a maximum of 3 color attachments, we must create two shaders with the following color
+    // attachments:
+    //
+    // layout(location = 0) out vec4 o_FragColorPX;
+    // layout(location = 1) out vec4 o_FragColorNX;
+    // layout(location = 2) out vec4 o_FragColorPY;
+    //
+    // and
+    //
+    // layout(location = 0) out vec4 o_FragColorNY;
+    // layout(location = 1) out vec4 o_FragColorPZ;
+    // layout(location = 2) out vec4 o_FragColorNZ;
+    private static class Chunk {
+        public final int chunkIndex;
+        public final int chunkSize;
+        public final int firstFaceIndex;
 
-    // Math!
-    private static final float PI_F = (float) Math.PI;
-
-    private static int log2(int value) {
-        if (value <= 0) {
-            throw new IllegalArgumentException("value must be positive");
+        public Chunk(int chunkIndex, int maxChunkSize) {
+            this.chunkIndex = chunkIndex;
+            this.firstFaceIndex = chunkIndex * maxChunkSize;
+            this.chunkSize = min(maxChunkSize, NUMBER_OF_CUBE_FACES - this.firstFaceIndex);
         }
-        value >>= 1;
-        int result = 0;
-        while (value != 0) {
-            ++result;
-            value >>= 1;
+    }
+
+    private static class ChunkIterable implements Iterable<Chunk> {
+        public final int maxChunkSize;
+        public final int numberOfChunks;
+
+        public ChunkIterable(int maxNumberOfColorAttachments) {
+            this.maxChunkSize = min(maxNumberOfColorAttachments, NUMBER_OF_CUBE_FACES);
+            int numberOfChunks = NUMBER_OF_CUBE_FACES / this.maxChunkSize;
+            if (NUMBER_OF_CUBE_FACES % this.maxChunkSize != 0) {
+                numberOfChunks++;
+            }
+            this.numberOfChunks = numberOfChunks;
         }
-        return result;
+
+        @Override
+        public Iterator<Chunk> iterator() {
+            return new Iterator<Chunk>() {
+                private Chunk chunk = new Chunk(/*chunkIndex=*/ 0, maxChunkSize);
+
+                @Override
+                public boolean hasNext() {
+                    return chunk.chunkIndex < numberOfChunks;
+                }
+
+                @Override
+                public Chunk next() {
+                    Chunk result = this.chunk;
+                    this.chunk = new Chunk(result.chunkIndex + 1, maxChunkSize);
+                    return result;
+                }
+            };
+        }
     }
 
-    private static float log4(float value) {
-        return (float) (Math.log((double) value) / Math.log(4.0));
-    }
-
-    private static float sqrt(float value) {
-        return (float) Math.sqrt((double) value);
-    }
-
-    private static float sin(float value) {
-        return (float) Math.sin((double) value);
-    }
-
-    private static float cos(float value) {
-        return (float) Math.cos((double) value);
-    }
-
-    private static float[] hammersley(int i, float iN) {
-        float tof = 0.5f / 0x80000000L;
-        long bits = i;
-        bits = (bits << 16) | (bits >>> 16);
-        bits = ((bits & 0x55555555L) << 1) | ((bits & 0xAAAAAAAAL) >>> 1);
-        bits = ((bits & 0x33333333L) << 2) | ((bits & 0xCCCCCCCCL) >>> 2);
-        bits = ((bits & 0x0F0F0F0FL) << 4) | ((bits & 0xF0F0F0F0L) >>> 4);
-        bits = ((bits & 0x00FF00FFL) << 8) | ((bits & 0xFF00FF00L) >>> 8);
-        return new float[]{i * iN, bits * tof};
-    }
-
-    private static float[] hemisphereImportanceSampleDggx(float[] u, float a) {
-        // GGX - Trowbridge-Reitz importance sampling
-        float phi = 2.0f * PI_F * u[0];
-        // NOTE: (aa-1) == (a-1)(a+1) produces better fp accuracy
-        float cosTheta2 = (1f - u[1]) / (1f + (a + 1f) * ((a - 1f) * u[1]));
-        float cosTheta = sqrt(cosTheta2);
-        float sinTheta = sqrt(1f - cosTheta2);
-        return new float[]{sinTheta * cos(phi), sinTheta * sin(phi), cosTheta};
-    }
-
-    private static float distributionGgx(float noh, float a) {
-        // NOTE: (aa-1) == (a-1)(a+1) produces better fp accuracy
-        float f = (a - 1f) * ((a + 1f) * (noh * noh)) + 1f;
-        return (a * a) / (PI_F * f * f);
+    private static class ImportanceSampleCacheEntry {
+        public float[] direction;
+        public float contribution;
+        public float level;
     }
 }

@@ -35,60 +35,6 @@ public class Texture implements Closeable {
     private final Target target;
 
     /**
-     * Describes the way the texture's edges are rendered.
-     *
-     * @see <a
-     * href="https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexParameter.xhtml">GL_TEXTURE_WRAP_S</a>.
-     */
-    public enum WrapMode {
-        CLAMP_TO_EDGE(GLES30.GL_CLAMP_TO_EDGE),
-        MIRRORED_REPEAT(GLES30.GL_MIRRORED_REPEAT),
-        REPEAT(GLES30.GL_REPEAT);
-
-        /* package-private */
-        final int glesEnum;
-
-        WrapMode(int glesEnum) {
-            this.glesEnum = glesEnum;
-        }
-    }
-
-    /**
-     * Describes the target this texture is bound to.
-     *
-     * @see <a
-     * href="https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glBindTexture.xhtml">glBindTexture</a>.
-     */
-    public enum Target {
-        TEXTURE_2D(GLES30.GL_TEXTURE_2D),
-        TEXTURE_EXTERNAL_OES(GLES11Ext.GL_TEXTURE_EXTERNAL_OES),
-        TEXTURE_CUBE_MAP(GLES30.GL_TEXTURE_CUBE_MAP);
-
-        final int glesEnum;
-
-        Target(int glesEnum) {
-            this.glesEnum = glesEnum;
-        }
-    }
-
-    /**
-     * Describes the color format of the texture.
-     *
-     * @see <a
-     * href="https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexImage2D.xhtml">glTexImage2d</a>.
-     */
-    public enum ColorFormat {
-        LINEAR(GLES30.GL_RGBA8),
-        SRGB(GLES30.GL_SRGB8_ALPHA8);
-
-        final int glesEnum;
-
-        ColorFormat(int glesEnum) {
-            this.glesEnum = glesEnum;
-        }
-    }
-
-    /**
      * Construct an empty {@link Texture}.
      *
      * <p>Since {@link Texture}s created in this way are not populated with data, this method is
@@ -173,6 +119,17 @@ public class Texture implements Closeable {
         return texture;
     }
 
+    private static Bitmap convertBitmapToConfig(Bitmap bitmap, Bitmap.Config config) {
+        // We use this method instead of BitmapFactory.Options.outConfig to support a minimum of Android
+        // API level 24.
+        if (bitmap.getConfig() == config) {
+            return bitmap;
+        }
+        Bitmap result = bitmap.copy(config, /*isMutable=*/ false);
+        bitmap.recycle();
+        return result;
+    }
+
     @Override
     public void close() {
         if (textureId[0] != 0) {
@@ -194,14 +151,57 @@ public class Texture implements Closeable {
         return target;
     }
 
-    private static Bitmap convertBitmapToConfig(Bitmap bitmap, Bitmap.Config config) {
-        // We use this method instead of BitmapFactory.Options.outConfig to support a minimum of Android
-        // API level 24.
-        if (bitmap.getConfig() == config) {
-            return bitmap;
+    /**
+     * Describes the way the texture's edges are rendered.
+     *
+     * @see <a
+     * href="https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexParameter.xhtml">GL_TEXTURE_WRAP_S</a>.
+     */
+    public enum WrapMode {
+        CLAMP_TO_EDGE(GLES30.GL_CLAMP_TO_EDGE),
+        MIRRORED_REPEAT(GLES30.GL_MIRRORED_REPEAT),
+        REPEAT(GLES30.GL_REPEAT);
+
+        /* package-private */
+        final int glesEnum;
+
+        WrapMode(int glesEnum) {
+            this.glesEnum = glesEnum;
         }
-        Bitmap result = bitmap.copy(config, /*isMutable=*/ false);
-        bitmap.recycle();
-        return result;
+    }
+
+    /**
+     * Describes the target this texture is bound to.
+     *
+     * @see <a
+     * href="https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glBindTexture.xhtml">glBindTexture</a>.
+     */
+    public enum Target {
+        TEXTURE_2D(GLES30.GL_TEXTURE_2D),
+        TEXTURE_EXTERNAL_OES(GLES11Ext.GL_TEXTURE_EXTERNAL_OES),
+        TEXTURE_CUBE_MAP(GLES30.GL_TEXTURE_CUBE_MAP);
+
+        final int glesEnum;
+
+        Target(int glesEnum) {
+            this.glesEnum = glesEnum;
+        }
+    }
+
+    /**
+     * Describes the color format of the texture.
+     *
+     * @see <a
+     * href="https://www.khronos.org/registry/OpenGL-Refpages/es3.0/html/glTexImage2D.xhtml">glTexImage2d</a>.
+     */
+    public enum ColorFormat {
+        LINEAR(GLES30.GL_RGBA8),
+        SRGB(GLES30.GL_SRGB8_ALPHA8);
+
+        final int glesEnum;
+
+        ColorFormat(int glesEnum) {
+            this.glesEnum = glesEnum;
+        }
     }
 }

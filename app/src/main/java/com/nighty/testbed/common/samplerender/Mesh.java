@@ -36,36 +36,10 @@ import de.javagl.obj.ObjUtils;
  */
 public class Mesh implements Closeable {
     private static final String TAG = Mesh.class.getSimpleName();
-
-    /**
-     * The kind of primitive to render.
-     *
-     * <p>This determines how the data in {@link VertexBuffer}s are interpreted. See <a
-     * href="https://www.khronos.org/opengl/wiki/Primitive">here</a> for more on how primitives
-     * behave.
-     */
-    public enum PrimitiveMode {
-        POINTS(GLES30.GL_POINTS),
-        LINE_STRIP(GLES30.GL_LINE_STRIP),
-        LINE_LOOP(GLES30.GL_LINE_LOOP),
-        LINES(GLES30.GL_LINES),
-        TRIANGLE_STRIP(GLES30.GL_TRIANGLE_STRIP),
-        TRIANGLE_FAN(GLES30.GL_TRIANGLE_FAN),
-        TRIANGLES(GLES30.GL_TRIANGLES);
-
-        /* package-private */
-        final int glesEnum;
-
-        PrimitiveMode(int glesEnum) {
-            this.glesEnum = glesEnum;
-        }
-    }
-
     private final int[] vertexArrayId = {0};
     private final PrimitiveMode primitiveMode;
     private final IndexBuffer indexBuffer;
     private final VertexBuffer[] vertexBuffers;
-
     /**
      * Construct a {@link Mesh}.
      *
@@ -186,6 +160,30 @@ public class Mesh implements Closeable {
                     primitiveMode.glesEnum, indexBuffer.getSize(), GLES30.GL_UNSIGNED_INT, 0);
             GLError.maybeThrowGLException(
                     "Failed to draw vertex array object with indices", "glDrawElements");
+        }
+    }
+
+    /**
+     * The kind of primitive to render.
+     *
+     * <p>This determines how the data in {@link VertexBuffer}s are interpreted. See <a
+     * href="https://www.khronos.org/opengl/wiki/Primitive">here</a> for more on how primitives
+     * behave.
+     */
+    public enum PrimitiveMode {
+        POINTS(GLES30.GL_POINTS),
+        LINE_STRIP(GLES30.GL_LINE_STRIP),
+        LINE_LOOP(GLES30.GL_LINE_LOOP),
+        LINES(GLES30.GL_LINES),
+        TRIANGLE_STRIP(GLES30.GL_TRIANGLE_STRIP),
+        TRIANGLE_FAN(GLES30.GL_TRIANGLE_FAN),
+        TRIANGLES(GLES30.GL_TRIANGLES);
+
+        /* package-private */
+        final int glesEnum;
+
+        PrimitiveMode(int glesEnum) {
+            this.glesEnum = glesEnum;
         }
     }
 }

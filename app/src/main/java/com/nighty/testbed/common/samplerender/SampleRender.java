@@ -105,6 +105,30 @@ public class SampleRender {
         GLError.maybeThrowGLException("Failed to clear framebuffer", "glClear");
     }
 
+    /* package-private */
+    AssetManager getAssets() {
+        return assetManager;
+    }
+
+    private void useFramebuffer(Framebuffer framebuffer) {
+        int framebufferId;
+        int viewportWidth;
+        int viewportHeight;
+        if (framebuffer == null) {
+            framebufferId = 0;
+            viewportWidth = this.viewportWidth;
+            viewportHeight = this.viewportHeight;
+        } else {
+            framebufferId = framebuffer.getFramebufferId();
+            viewportWidth = framebuffer.getWidth();
+            viewportHeight = framebuffer.getHeight();
+        }
+        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, framebufferId);
+        GLError.maybeThrowGLException("Failed to bind framebuffer", "glBindFramebuffer");
+        GLES30.glViewport(0, 0, viewportWidth, viewportHeight);
+        GLError.maybeThrowGLException("Failed to set viewport dimensions", "glViewport");
+    }
+
     /**
      * Interface to be implemented for rendering callbacks.
      */
@@ -129,29 +153,5 @@ public class SampleRender {
          * <p>See {@link GLSurfaceView.Renderer#onDrawFrame}.
          */
         void onDrawFrame(SampleRender render);
-    }
-
-    /* package-private */
-    AssetManager getAssets() {
-        return assetManager;
-    }
-
-    private void useFramebuffer(Framebuffer framebuffer) {
-        int framebufferId;
-        int viewportWidth;
-        int viewportHeight;
-        if (framebuffer == null) {
-            framebufferId = 0;
-            viewportWidth = this.viewportWidth;
-            viewportHeight = this.viewportHeight;
-        } else {
-            framebufferId = framebuffer.getFramebufferId();
-            viewportWidth = framebuffer.getWidth();
-            viewportHeight = framebuffer.getHeight();
-        }
-        GLES30.glBindFramebuffer(GLES30.GL_FRAMEBUFFER, framebufferId);
-        GLError.maybeThrowGLException("Failed to bind framebuffer", "glBindFramebuffer");
-        GLES30.glViewport(0, 0, viewportWidth, viewportHeight);
-        GLError.maybeThrowGLException("Failed to set viewport dimensions", "glViewport");
     }
 }

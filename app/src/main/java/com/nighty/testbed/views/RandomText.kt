@@ -13,8 +13,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.nighty.testbed.viewmodels.MainViewModel
 import com.nighty.testbed.MainViewState
+import com.nighty.testbed.viewmodels.MainViewModel
 
 @Composable
 fun RandomText(viewModel: MainViewModel = viewModel()) {
@@ -54,6 +54,9 @@ fun RandomText(viewModel: MainViewModel = viewModel()) {
             }
             is MainViewState.Ready -> {
                 Text(text = s.loremIpsum)
+            }
+            else -> {
+                Text(text = "Something went wrong!")
             }
         }
     }

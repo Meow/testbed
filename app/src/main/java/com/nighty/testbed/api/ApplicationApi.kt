@@ -9,7 +9,7 @@ class ApplicationApi(private val client: HttpClient) {
         .get("https://loripsum.net/api/$count/long/plaintext")
         .body()
 
-    suspend fun randomUser(): String = client
+    suspend fun randomUser(): UserJson = client
         .get("https://random-data-api.com/api/v2/users")
         .body()
 }
