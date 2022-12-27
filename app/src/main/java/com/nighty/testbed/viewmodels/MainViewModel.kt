@@ -62,6 +62,14 @@ class MainViewModel(client: HttpClient, private val db: AppDatabase) : ViewModel
         )
     }
 
+    fun deleteUser(usr: User, onFinish: () -> Unit) {
+        viewModelScope.launch {
+            internalStateFlow.value = MainViewState.Loading
+            db.userDao().delete(usr)
+            internalStateFlow.value = MainViewState.UserDeleted
+        }
+    }
+
     fun createRandomUser(onFinish: (usr: User?) -> Unit) {
         viewModelScope.launch {
             internalStateFlow.value = MainViewState.Loading

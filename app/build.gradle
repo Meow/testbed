@@ -60,6 +60,7 @@ dependencies {
     implementation 'androidx.activity:activity-compose:1.6.1'
     implementation 'com.google.ar:core:1.35.0'
     implementation 'de.javagl:obj:0.2.1'
+    implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
     implementation 'androidx.lifecycle:lifecycle-common-java8:2.5.1'
     implementation "androidx.navigation:navigation-compose:$nav_version"
     implementation "io.ktor:ktor-client-core:$ktor_version"

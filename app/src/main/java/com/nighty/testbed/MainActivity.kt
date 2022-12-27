@@ -174,7 +174,6 @@ class MainActivity : ComponentActivity() {
         FullScreenHelper.setFullScreenOnWindowFocusChanged(this, hasFocus)
     }
 
-
     @Preview(showBackground = true)
     @Composable
     fun DefaultPreview() {
