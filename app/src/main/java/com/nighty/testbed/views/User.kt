@@ -9,7 +9,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.nighty.testbed.models.User
@@ -17,7 +16,15 @@ import com.nighty.testbed.viewmodels.MainViewModel
 import java.time.format.DateTimeFormatter
 
 @Composable
-fun User(viewModel: MainViewModel, navController: NavController, user: User) {
+fun User(viewModel: MainViewModel, navController: NavController, user: User?) {
+    if (user == null) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Text("User not found!")
+        }
+
+        return
+    }
+
     Column(modifier = Modifier.padding(16.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,

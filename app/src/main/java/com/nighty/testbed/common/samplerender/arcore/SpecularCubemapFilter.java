@@ -155,19 +155,19 @@ public class SpecularCubemapFilter implements Closeable {
     }
 
     private static float log4(float value) {
-        return (float) (Math.log((double) value) / Math.log(4.0));
+        return (float) (Math.log(value) / Math.log(4.0));
     }
 
     private static float sqrt(float value) {
-        return (float) Math.sqrt((double) value);
+        return (float) Math.sqrt(value);
     }
 
     private static float sin(float value) {
-        return (float) Math.sin((double) value);
+        return (float) Math.sin(value);
     }
 
     private static float cos(float value) {
-        return (float) Math.cos((double) value);
+        return (float) Math.cos(value);
     }
 
     private static float[] hammersley(int i, float iN) {

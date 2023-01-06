@@ -57,11 +57,7 @@ fun UserList(viewModel: MainViewModel = viewModel()) {
 
                 LazyColumn {
                     items(users.count()) { index ->
-                        Button(onClick = {
-
-                        }) {
-                            UserListItem(users[index])
-                        }
+                        UserListItem(users[index])
                     }
                 }
             }

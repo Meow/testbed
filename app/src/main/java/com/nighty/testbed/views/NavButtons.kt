@@ -8,17 +8,19 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
+import com.nighty.testbed.viewmodels.MainViewModel
 
 @Composable
-fun NavButtons(navController: NavController) {
+fun NavButtons(viewModel: MainViewModel, navController: NavController) {
     Row(
         horizontalArrangement = Arrangement.SpaceEvenly,
         modifier = Modifier.fillMaxWidth()
     ) {
         Button(onClick = {
+            viewModel.requestQrCodeScanner()
             navController.navigate("ar-view")
         }) {
-            Text(text = "AR View")
+            Text(text = "Scan QRC")
         }
 
         Button(onClick = {

@@ -62,6 +62,19 @@ class MainViewModel(client: HttpClient, private val db: AppDatabase) : ViewModel
         )
     }
 
+    fun findUserByUsername(username: String) {
+        viewModelScope.launch {
+            internalStateFlow.value = MainViewState.Loading
+            internalStateFlow.value = MainViewState.UserLoadedFromQr(
+                db.userDao().findByUsername(username)
+            )
+        }
+    }
+
+    fun requestQrCodeScanner() {
+        internalStateFlow.value = MainViewState.QrCodeScannerRequested
+    }
+
     fun deleteUser(usr: User, onFinish: () -> Unit) {
         viewModelScope.launch {
             internalStateFlow.value = MainViewState.Loading
@@ -88,5 +101,10 @@ class MainViewModel(client: HttpClient, private val db: AppDatabase) : ViewModel
                 user
             )
         }
+    }
+
+    fun setQrCodeContent(code: String) {
+        internalStateFlow.value =
+            MainViewState.QrCodeScanned(code.replace("^http(s)?://".toRegex(), ""))
     }
 }

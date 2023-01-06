@@ -27,11 +27,7 @@ fun UserListItem(user: User) {
         )
         Column(modifier = Modifier.padding(8.dp)) {
             Text("${user.firstName} ${user.lastName}", fontWeight = FontWeight.Bold)
-            Text("Phone ${user.phone}", fontStyle = FontStyle.Italic)
-            Text(
-                "Birthday ${user.dateOfBirth?.format(DateTimeFormatter.ISO_LOCAL_DATE)}",
-                fontStyle = FontStyle.Italic
-            )
+            Text(user.username, fontStyle = FontStyle.Italic)
             Text(
                 "Registered on ${user.createdAt.format(DateTimeFormatter.ISO_LOCAL_DATE)}",
                 fontStyle = FontStyle.Italic
