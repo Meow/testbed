@@ -43,4 +43,14 @@ interface UserDao {
 
     @Query("SELECT * FROM users u WHERE u.username = :username LIMIT 1")
     fun findByUsername(username: String): User?
+
+    // Apparently Google's implementation of sqlite3 does not
+    // support `TRUNCATE TABLE` command. We are forced to use
+    // `DELETE FROM table` instead.
+    //
+    // I am just putting it for the record here, I would've used
+    // `TRUNCATE TABLE` instead, as it would have been much faster
+    // and safer.
+    @Query("DELETE FROM users")
+    fun deleteAll()
 }

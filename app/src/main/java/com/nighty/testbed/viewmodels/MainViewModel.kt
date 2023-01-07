@@ -107,4 +107,35 @@ class MainViewModel(client: HttpClient, private val db: AppDatabase) : ViewModel
         internalStateFlow.value =
             MainViewState.QrCodeScanned(code.replace("^http(s)?://".toRegex(), ""))
     }
+
+    fun deleteAllUsers() {
+        viewModelScope.launch {
+            internalStateFlow.value = MainViewState.Loading
+
+            db.userDao().deleteAll()
+
+            internalStateFlow.value = MainViewState.AllUsersDeleted
+        }
+    }
+
+    fun seedUsers() {
+        viewModelScope.launch {
+            internalStateFlow.value = MainViewState.Loading
+
+            for (_i in 1..10) {
+                val userdata = api.randomUser()
+
+                createUser(
+                    userdata.username,
+                    userdata.first_name,
+                    userdata.last_name,
+                    userdata.avatar,
+                    userdata.phone_number,
+                    OffsetDateTime.parse("${userdata.date_of_birth}T00:00:00+00:00")
+                )
+            }
+
+            internalStateFlow.value = MainViewState.UsersSeeded
+        }
+    }
 }

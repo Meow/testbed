@@ -6,6 +6,8 @@ sealed interface MainViewState {
     object Loading : MainViewState
     object UserDeleted : MainViewState
     object QrCodeScannerRequested : MainViewState
+    object AllUsersDeleted : MainViewState
+    object UsersSeeded : MainViewState
 
     data class Ready(val loremIpsum: String) : MainViewState
     data class UserCreated(val usr: User?) : MainViewState

@@ -30,7 +30,7 @@ fun NavButtons(viewModel: MainViewModel, navController: NavController) {
         }
 
         Button(onClick = {
-            navController.navigate("random-text")
+            navController.navigate("settings")
         }) {
             Text(text = "Settings")
         }

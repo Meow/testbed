@@ -20,7 +20,7 @@ fun MainView(viewModel: MainViewModel, barcodeLauncher: ActivityResultLauncher<S
     Column(verticalArrangement = Arrangement.SpaceBetween) {
         NavButtons(viewModel, navController)
         NavHost(navController = navController, startDestination = "user-list") {
-            composable("random-text") { RandomText(viewModel) }
+            composable("settings") { Settings(viewModel) }
             composable("user-list") { UserList(viewModel) }
             composable("ar-view") {
                 when (val s = state) {

@@ -28,7 +28,9 @@ fun User(viewModel: MainViewModel, navController: NavController, user: User?) {
     Column(modifier = Modifier.padding(16.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.height(128.dp)
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(Modifier.height(106.dp))
         ) {
             AsyncImage(
                 model = user.avatarUrl,
@@ -38,7 +40,7 @@ fun User(viewModel: MainViewModel, navController: NavController, user: User?) {
             Text(
                 "${user.firstName} ${user.lastName}",
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.size(32.dp)
+                modifier = Modifier.height(40.dp)
             )
         }
         Text(

@@ -6,6 +6,8 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import java.time.OffsetDateTime
 
+// Database structure, indexing and table names are
+// inspired by Ruby on Rails and ActiveRecord.
 @Entity(
     tableName = "users",
     indices = [
