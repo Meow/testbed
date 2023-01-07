@@ -52,3 +52,11 @@ Liberties/Alternatives taken:
 - Build was only tested on Linux using latest bleeding-edge Android Studio
 - UI in general is really wonky and quickly slapped together. I am not very good at making UIs (unless it's HTML + CSS).
 - Core features should work and were tested
+
+## Legal
+
+This project at some point used HelloArKotlin example, and some of its code may have not been completely cleaned up when I switched away from AR. See copyright notices in respective files.
+
+## Links 
+
+- [Git repo](https://github.com/Meow/testbed)
